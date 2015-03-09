@@ -1,0 +1,11 @@
+name: CraftingAssistance
+main: me.ccl2of4.CraftingAssistance.CraftingAssistancePlugin
+description: Provides crafting assistance through server commands
+version: 1.1.1
+commands:
+  CraftAssist:
+    description: View information about the plugin
+  what:
+    description: What block am I looking at?
+  how:
+    description: How do I craft the block I am looking at?
