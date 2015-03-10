@@ -1,17 +1,16 @@
 package me.ccl2of4.CraftingAssistance;
 
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.inventory.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by connor on 3/8/15.
+ * Created by connor on 3/9/15.
  */
-public final class RecipeIngredientsFinder {
+public class StringAssembler {
     private static Map<Class, RecipeIngredientsFinderInner> mappings = new HashMap<Class, RecipeIngredientsFinderInner> ();
 
     private static abstract class RecipeIngredientsFinderInner {
@@ -40,7 +39,7 @@ public final class RecipeIngredientsFinder {
                                 .append (ChatColor.YELLOW);
 
                         if (itemStack != null) {
-                            builder.append (getMaterialDescription (itemStack.getType ()));
+                            builder.append (getStringForMaterial (itemStack.getType ()));
                         } else {
                             builder.append ("-empty-");
                         }
@@ -72,7 +71,7 @@ public final class RecipeIngredientsFinder {
                             .append (ChatColor.YELLOW);
 
                     if (itemStack != null) {
-                        builder.append (getMaterialDescription (itemStack.getType ()));
+                        builder.append (getStringForMaterial (itemStack.getType ()));
                     } else {
                         builder.append ("-empty-");
                     }
@@ -95,7 +94,7 @@ public final class RecipeIngredientsFinder {
                         .append (ChatColor.RESET)
 
                         .append (ChatColor.YELLOW)
-                        .append (getMaterialDescription (recipe.getInput ().getType ()))
+                        .append (getStringForMaterial (recipe.getInput ().getType ()))
                         .append (ChatColor.RESET);
 
                 return builder.toString ();
@@ -104,7 +103,7 @@ public final class RecipeIngredientsFinder {
 
     }
 
-    public static String findIngredients (Recipe recipe) {
+    public static String getStringForRecipe (Recipe recipe) {
         Class c = recipe.getClass ();
         while (!mappings.containsKey (c)) {
             if (c == Object.class)
@@ -114,11 +113,14 @@ public final class RecipeIngredientsFinder {
         return mappings.get (c).findIngredients (recipe);
     }
 
-    public static String getMaterialDescription (Material material) {
-        String result = material.toString ();
-        result = result.toLowerCase ();
+    public static String getStringForMaterial (Material material) {
+        String result = "null";
+        if (material != null) {
+            result = material.toString ();
+            result = result.toLowerCase ();
+        }
         return result;
     }
 
-    private RecipeIngredientsFinder () {}
+    private StringAssembler () {}
 }

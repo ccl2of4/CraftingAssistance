@@ -3,10 +3,11 @@ package me.ccl2of4.CraftingAssistance;
 /**
  * Created by Connor Lirot on 3/5/2015.
  */
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import me.ccl2of4.CraftingAssistance.JavaPluginCommandHandler.JavaPluginCommandHandler;
 
 public final class CraftingAssistancePlugin extends JavaPlugin
 {
@@ -40,30 +41,11 @@ public final class CraftingAssistancePlugin extends JavaPlugin
 
         String name = cmd.getName ();
 
-        if ("CraftingAssistance".equalsIgnoreCase (name)) {
-            sender.sendMessage ("Made by ccl2of4 - https://github.com/ccl2of4/CraftingAssistance");
+        JavaPluginCommandHandler commandHandler = JavaPluginCommandHandler.getCommandHandler (cmd.getName ());
+        if (commandHandler != null) {
+            commandHandler.execute (sender, cmd, s, args);
             return true;
         }
-
-        else {
-            StringBuilder message = new StringBuilder ();
-            message
-                    .append ("=========")
-                    .append (ChatColor.DARK_AQUA)
-                    .append ("CraftingAssistance")
-                    .append (ChatColor.RESET)
-                    .append ("=========\n");
-
-            if ("what".equalsIgnoreCase (name)) {
-                message.append (logic.what (sender, cmd, s, args));
-            } else if ("how".equalsIgnoreCase (name)) {
-                message.append (logic.how (sender, cmd, s, args));
-            }
-
-            message.append ("==================================\n");
-            sender.sendMessage (message.toString ());
-        }
-
         return false;
     }
 }
