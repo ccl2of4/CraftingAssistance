@@ -25,6 +25,4 @@ public abstract class JavaPluginCommandHandler {
         JavaPluginCommandHandler handler = mappings.get (name.toLowerCase ());
         return handler;
     }
-
-    protected JavaPluginCommandHandler () {}
 }
