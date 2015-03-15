@@ -10,8 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.*;
 import org.bukkit.util.BlockIterator;
 
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -25,6 +25,122 @@ public final class CraftingAssistanceLogic {
 
     public JavaPluginLogger getLogger () { return logger; }
     public void setLogger (JavaPluginLogger logger) { this.logger = logger; }
+
+    public static int craftMaterials (Material material, int num, Inventory inventory) {
+        assert (material != null);
+        assert (num >= 0);
+        assert (inventory != null);
+
+        int result = 0;
+        List<Recipe> recipes = getRecipes (material);
+
+        if (recipes.size () > 0) {
+            while (result < num) {
+                for (Recipe recipe : recipes) {
+                    ItemStack output = recipe.getResult ();
+                    assert (output.getType () == material);
+
+                    if (craftRecipe (recipe, inventory)) {
+                        result += output.getAmount ();
+                        break;
+                    } else {
+                        return result;
+                    }
+
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static boolean craftRecipe (Recipe recipe, Inventory inventory) {
+
+        ItemStack output = recipe.getResult ();
+        List<ItemStack> ingredients = getIngredients (recipe);
+        Map<Material, Integer> requiredMaterials = new HashMap<Material, Integer> ();
+
+        // only support shaped and shapeless recipes
+        if (ingredients == null) {
+            return false;
+        }
+
+        // collect all ItemStacks together
+        for (ItemStack itemStack : ingredients) {
+            Material material = itemStack.getType ();
+            Integer currentRequiredAmount = requiredMaterials.get (material);
+            int requiredAmount = itemStack.getAmount ();
+            requiredMaterials.put (material,
+                    (currentRequiredAmount == null ? 0 : currentRequiredAmount) + requiredAmount);
+        }
+
+        // check to see if inventory can craft the recipe
+        for (Material material : requiredMaterials.keySet ()) {
+            int requiredAmount = requiredMaterials.get (material);
+            if (!inventory.contains (material, requiredAmount)) return false;
+        }
+
+        // remove appropriate materials from inventory
+        for (Material material : requiredMaterials.keySet ()) {
+            int requiredAmount = requiredMaterials.get (material);
+
+            Map<Integer, ? extends ItemStack> inventoryItemStacks = inventory.all (material);
+
+            for (Integer index : inventoryItemStacks.keySet ()) {
+                ItemStack inventoryItemStack = inventoryItemStacks.get (index);
+                int invAmount = inventoryItemStack.getAmount ();
+                int removed = Math.min (invAmount, requiredAmount);
+
+                if (removed == invAmount) {
+                    inventory.clear (index);
+                } else {
+                    inventoryItemStack.setAmount (invAmount - removed);
+                    inventory.setItem (index, inventoryItemStack);
+                }
+
+                requiredAmount -= removed;
+                if (requiredAmount == 0) break;
+            }
+
+            // we've checked if we can craft this so if the bukkit api works as expected,
+            // this assertion should never fail
+            assert (requiredAmount != 0);
+        }
+
+        // finally add the ItemStack
+        inventory.addItem (output);
+
+        return true;
+    }
+
+    public static List<ItemStack> getIngredients (Recipe recipe) {
+        if (recipe instanceof ShapedRecipe) {
+            ShapedRecipe shapedRecipe = (ShapedRecipe)recipe;
+            List<ItemStack> result = new LinkedList<ItemStack>();
+            Map<Character, ItemStack> ingredientMap = shapedRecipe.getIngredientMap();
+            for (String string : shapedRecipe.getShape()) {
+                for (int i = 0; i < string.length(); ++i) {
+                    char c = string.charAt(i);
+                    ItemStack itemStack = ingredientMap.get(c);
+                    result.add(itemStack);
+                }
+            }
+            return result;
+        }
+
+        else if (recipe instanceof ShapelessRecipe) {
+            ShapelessRecipe shapelessRecipe = (ShapelessRecipe)recipe;
+            return shapelessRecipe.getIngredientList();
+        }
+
+        else {
+            return null;
+        }
+    }
+
+    public static List<ItemStack> getIngredients (ShapelessRecipe recipe) {
+        return recipe.getIngredientList();
+    }
 
     public static Block getBlock (Player player) {
         BlockIterator it = new BlockIterator (player, 10);

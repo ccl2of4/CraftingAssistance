@@ -16,6 +16,7 @@ public abstract class JavaPluginCommandHandler {
     static {
         mappings.put ("what", new CAWhatCommandHandler ());
         mappings.put ("how", new CAHowCommandHandler ());
+        mappings.put ("craft", new CACraftCommandHandler ());
         mappings.put ("craftingassistance", new CAAboutCommandHandler ());
     }
 

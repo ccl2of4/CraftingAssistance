@@ -9,3 +9,5 @@ commands:
     description: What block am I looking at?
   how:
     description: How do I craft the block I am looking at?
+  craft:
+    description: Craft a number of blocks using what's in your inventory
