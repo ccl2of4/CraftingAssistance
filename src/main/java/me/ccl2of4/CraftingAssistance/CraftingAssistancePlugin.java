@@ -9,6 +9,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.ccl2of4.CraftingAssistance.JavaPluginCommandHandler.JavaPluginCommandHandler;
 
+import java.io.File;
+
 public final class CraftingAssistancePlugin extends JavaPlugin
 {
     private JavaPluginLogger logger;
@@ -30,9 +32,12 @@ public final class CraftingAssistancePlugin extends JavaPlugin
         logger.setPlugin (this);
         logger.info(this.getDescription().getName() + " version " + this.getDescription().getVersion() + " enabled!");
 
-        // set up the listener
-        logic = new CraftingAssistanceLogic ();
-        logic.setLogger(logger);
+        // copy the config file if necessary
+        File configFile = new File(this.getDataFolder(), "config.yml");
+        if (!configFile.exists ()) {
+            logger.warning("config.yml not found in data folder. Creating default config.yml.");
+            saveDefaultConfig();
+        }
     }
 
     // Command handler
@@ -43,6 +48,7 @@ public final class CraftingAssistancePlugin extends JavaPlugin
 
         JavaPluginCommandHandler commandHandler = JavaPluginCommandHandler.getCommandHandler (cmd.getName ());
         if (commandHandler != null) {
+            commandHandler.setPlugin (this);
             commandHandler.execute (sender, cmd, s, args);
             return true;
         }

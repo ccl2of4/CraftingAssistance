@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -185,6 +186,72 @@ public final class CraftingAssistanceLogic {
                 result.add (material);
         }
         return result;
+    }
+
+    public static Block getBlockInFrontOfPlayerFace (Player player) {
+        BlockIterator it = new BlockIterator (player, 1);
+        Block block = null;
+        if (it.hasNext ()) {
+            block = it.next ();
+        }
+        return block;
+    }
+
+    public static int getDistanceFromCraftingTable (Player player, int maxDistanceToCheck) {
+        Queue<BlockAndDistance> queue = new LinkedList<BlockAndDistance> ();
+        Set<Block> exploredBlocks = new HashSet<Block> ();
+
+        Block firstBlock = getBlockInFrontOfPlayerFace (player);
+
+        BlockAndDistance blockAndDistance = new BlockAndDistance (firstBlock, 0);
+
+        do {
+            Block block = blockAndDistance.block;
+            int distance = blockAndDistance.distance;
+
+            Material material = block.getType ();
+
+            if (Material.WORKBENCH == material) {
+                return distance;
+            }
+
+            if (++distance <= maxDistanceToCheck) {
+
+                Block[] adjacentBlocks = {
+                        block.getRelative (BlockFace.UP),
+                        block.getRelative (BlockFace.NORTH),
+                        block.getRelative (BlockFace.EAST),
+                        block.getRelative (BlockFace.SOUTH),
+                        block.getRelative (BlockFace.WEST),
+                        block.getRelative (BlockFace.DOWN)
+                };
+
+                for (Block adjacentBlock : adjacentBlocks) {
+                    if (!exploredBlocks.contains (adjacentBlock)) {
+                        BlockAndDistance adjacentBlockAndDistance = new BlockAndDistance (adjacentBlock, distance);
+                        exploredBlocks.add (adjacentBlock);
+                        queue.add (adjacentBlockAndDistance);
+                    }
+                }
+
+            } else {
+                break;
+            }
+
+            blockAndDistance = queue.poll ();
+
+        } while (blockAndDistance != null);
+
+        return -1;
+    }
+
+    private static class BlockAndDistance {
+        public Block block;
+        public int distance;
+        public BlockAndDistance (Block block, int distance) {
+            this.block = block;
+            this.distance = distance;
+        }
     }
 }
 

@@ -2,6 +2,7 @@ package me.ccl2of4.CraftingAssistance.JavaPluginCommandHandler;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Map;
 public abstract class JavaPluginCommandHandler {
 
     private static Map<String, JavaPluginCommandHandler> mappings = new HashMap<String, JavaPluginCommandHandler> ();
+    private JavaPlugin plugin;
 
     static {
         mappings.put ("what", new CAWhatCommandHandler ());
@@ -26,4 +28,7 @@ public abstract class JavaPluginCommandHandler {
         JavaPluginCommandHandler handler = mappings.get (name.toLowerCase ());
         return handler;
     }
+
+    public void setPlugin (JavaPlugin plugin) { this.plugin = plugin; }
+    public JavaPlugin getPlugin () { return plugin; }
 }

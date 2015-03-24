@@ -7,9 +7,11 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +19,11 @@ import java.util.List;
 /**
  * Created by Connor on 3/15/15.
  */
+
 public class CACraftCommandHandler extends JavaPluginCommandHandler {
+
+    private static final String CraftingTableMaxDistanceKey = "crafting_table_max_distance";
+
     @Override
     public void execute (CommandSender sender, Command cmd, String s, String[] args) {
         StringBuilder result = new StringBuilder ();
@@ -32,8 +38,16 @@ public class CACraftCommandHandler extends JavaPluginCommandHandler {
 
         Player player = (Player)sender;
 
+        // player must be near a crafting table
+        int maxDistance = getCraftingTableMaxDistance ();
+        int distance = CraftingAssistanceLogic.getDistanceFromCraftingTable (player, maxDistance);
+        if (distance == -1) {
+            sender.sendMessage (ChatColor.RED + "You must be near a crafting table to use /craft." + ChatColor.RESET);
+            return;
+        }
+
         if (args.length == 0) {
-            sender.sendMessage (ChatColor.RED + usage () + ChatColor.RED);
+            sender.sendMessage (ChatColor.RED + usage () + ChatColor.RESET);
             return;
         }
 
@@ -95,7 +109,19 @@ public class CACraftCommandHandler extends JavaPluginCommandHandler {
         sender.sendMessage (result.toString ());
     }
 
-    public static String usage () {
+    private int getCraftingTableMaxDistance () {
+        JavaPlugin plugin = getPlugin ();
+        if (plugin == null) {
+            throw new IllegalStateException ("CACraftCommandHandler cannot handle commands without having a plugin assigned to it.");
+        }
+
+        FileConfiguration config = plugin.getConfig ();
+        int value = config.getInt (CraftingTableMaxDistanceKey);
+
+        return value;
+    }
+
+    private static String usage () {
         return "USAGE: /craft <material> [num]";
     }
 }
